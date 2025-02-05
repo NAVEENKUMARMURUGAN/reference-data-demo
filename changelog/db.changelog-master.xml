@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+    http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+    
+
+    <!-- Create tables - using SQL -->
+    <changeSet id="ref-001-create-table" author="dev-team">
+        <sqlFile path="reference-data/currency-rates/schema/001-create-table.sql" 
+                 relativeToChangelogFile="true"
+                 splitStatements="true"
+                 stripComments="true"/>
+    </changeSet>
+    
+    <!-- Initial data load - using XML with CSV -->
+    <include file="reference-data/currency-rates/data/v1.0/v1.0-currency-load.xml" 
+             relativeToChangelogFile="true"/>
+
+        <!-- Initial data load - using XML with CSV -->
+    <include file="reference-data/currency-rates/data/v1.1/v1.1-currency-load.xml" 
+             relativeToChangelogFile="true"/>
+
+    <include file="reference-data/currency-rates/updates/changelog.xml"
+             relativeToChangelogFile="true"/>
+
+    <include file="reference-data/currency-rates/data/v1.2/v1.2-currency-load.xml" 
+             relativeToChangelogFile="true"/>
+</databaseChangeLog>

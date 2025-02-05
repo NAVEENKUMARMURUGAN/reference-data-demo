@@ -1,0 +1,4 @@
+currency_code,rate,decimals,is_active,description,created_by
+ABC,110.5000,0,true,"Naveen Kumar Market",v1.2-load
+BCD,110.5000,0,true,"Naveen Kumar Market",v1.2-load
+CDA,110.5000,0,true,"Naveen Kumar Market",v1.2-load
