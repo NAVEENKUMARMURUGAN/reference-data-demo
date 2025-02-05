@@ -1,0 +1,6 @@
+currency_code,rate,decimals,is_active,description
+USD,1.0000,2,"United States Dollar"
+EUR,1.1000,2,"Euro"
+GBP,1.2000,2,"British Pound Sterling"
+JPY,110.5000,0,"Japanese Yenn"
+MCK,110.5000,0,"Mukesh Kumar Market"

@@ -1,0 +1,6 @@
+currency_code,rate,decimals,description
+USD,1.0000,2,"United States Dollar"
+EUR,1.1000,2,"Euro"
+GBP,1.2000,2,"British Pound Sterling"
+JPY,110.5000,0,"Japanese Yen"
+NKM,110.5000,0,"Naveen Kumar Market"

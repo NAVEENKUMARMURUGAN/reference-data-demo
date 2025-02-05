@@ -5,98 +5,98 @@
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
     
+    <property name="currency.table" value="currency_rates"/>
+    <property name="temp.table" value="temp_currency_rates"/>
+    <property name="version_number" value="v1.1"/>
+    
     <changeSet id="process-currency-updates" author="business-team">
     <!-- Create temp table -->
-        <createTable tableName="temp_currency_rates">
+        <createTable tableName="${temp.table}">
             <column name="currency_code" type="VARCHAR(3)"/>
             <column name="rate" type="DECIMAL(10,4)"/>
             <column name="decimals" type="INT"/>
-            <column name="is_active" type="BOOLEAN"/>
             <column name="description" type="VARCHAR(255)"/>
-            <column name="created_by" type="VARCHAR(100)"/>
+            <column name="created_by_deployment_version" type="VARCHAR(100)" defaultValue="${version_number}"/>
         </createTable>
 
         <!-- Load new data -->
         <loadData
-            file="v1.1_currency_data.csv"
-            tableName="temp_currency_rates"
+            file="${version_number}_${currency.table}.csv"
+            tableName="${temp.table}"
             relativeToChangelogFile="true">
             <column name="currency_code" type="STRING"/>
             <column name="rate" type="NUMERIC"/>
             <column name="decimals" type="NUMERIC"/>
-            <column name="is_active" type="BOOLEAN"/>
             <column name="description" type="STRING"/>
-            <column name="created_by" type="STRING"/>
         </loadData>
 
         <!-- Handle Updates - End date existing records that changed -->
         <sql>
-            UPDATE currency_rates cr
+            UPDATE ${currency.table} cr
             SET effective_to = CURRENT_TIMESTAMP
-            FROM temp_currency_rates tr
+            FROM ${temp.table} tr
             WHERE cr.currency_code = tr.currency_code
             AND cr.effective_to IS NULL
             AND (
                 cr.rate != tr.rate OR
                 cr.decimals != tr.decimals OR
-                cr.description != tr.description OR
-                cr.is_active != tr.is_active
+                cr.description != tr.description
             );
         </sql>
 
         <!-- Handle Updates - Insert new versions -->
         <sql>
-            INSERT INTO currency_rates 
-            (currency_code, rate, decimals, is_active, description, created_by, effective_from)
+            INSERT INTO ${currency.table}
+            (currency_code, rate, decimals, description, created_by_deployment_version, effective_from)
             SELECT 
                 tr.currency_code,
                 tr.rate,
                 tr.decimals,
-                tr.is_active,
                 tr.description,
-                tr.created_by,
+                tr.is_active,
+                tr.created_by_deployment_version,
                 CURRENT_TIMESTAMP
-            FROM temp_currency_rates tr
-            JOIN currency_rates cr 
+            FROM ${temp.table} tr
+            JOIN ${currency.table} cr 
             ON cr.currency_code = tr.currency_code
             WHERE cr.effective_to = CURRENT_TIMESTAMP;
         </sql>
 
         <!-- Handle Inserts - New records not in existing table -->
         <sql>
-            INSERT INTO currency_rates 
-            (currency_code, rate, decimals, is_active, description, created_by, effective_from)
+            INSERT INTO ${currency.table}
+            (currency_code, rate, decimals, description, is_active, created_by_deployment_version, effective_from)
             SELECT 
                 tr.currency_code,
                 tr.rate,
                 tr.decimals,
-                tr.is_active,
                 tr.description,
-                tr.created_by,
+                tr.is_active,
+                tr.created_by_deployment_version,
                 CURRENT_TIMESTAMP
-            FROM temp_currency_rates tr
+            FROM ${temp.table} tr
             WHERE NOT EXISTS (
-                SELECT 1 FROM currency_rates cr 
+                SELECT 1 FROM ${currency.table} cr 
                 WHERE cr.currency_code = tr.currency_code
             );
         </sql>
 
         <!-- Handle Deletes - End date records not in new file -->
         <sql>
-            UPDATE currency_rates cr
+            UPDATE ${currency.table} cr
             SET effective_to = CURRENT_TIMESTAMP,
                 is_active = false
             WHERE NOT EXISTS (
-                SELECT 1 FROM temp_currency_rates tr 
+                SELECT 1 FROM ${temp.table} tr 
                 WHERE tr.currency_code = cr.currency_code
             )
             AND cr.effective_to IS NULL;
         </sql>
 
         <!-- Cleanup -->
-        <dropTable tableName="temp_currency_rates"/>
+        <dropTable tableName="${temp.table}"/>
 
-                <sql>
+        <sql>
             CREATE TEMPORARY TABLE IF NOT EXISTS tmp_execution_time AS
             SELECT CURRENT_TIMESTAMP as exec_time;
         </sql>
@@ -105,11 +105,11 @@
             <!-- Restore the previous state by removing new records and un-ending previously ended records -->
             <sql>
                 WITH execution_time AS (SELECT exec_time FROM tmp_execution_time)
-                DELETE FROM currency_rates
+                DELETE FROM ${currency.table}
                 WHERE effective_from = (SELECT exec_time FROM execution_time);
 
                 WITH execution_time AS (SELECT exec_time FROM tmp_execution_time)
-                UPDATE currency_rates
+                UPDATE ${currency.table}
                 SET effective_to = NULL,
                     is_active = true
                 WHERE effective_to = (SELECT exec_time FROM execution_time);
@@ -117,7 +117,6 @@
                 DROP TABLE IF EXISTS tmp_execution_time;
             </sql>
         </rollback>
-</changeSet>
-
+    </changeSet>
     
 </databaseChangeLog>

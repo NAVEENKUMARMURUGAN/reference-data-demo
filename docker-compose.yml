@@ -26,7 +26,7 @@ services:
       - LIQUIBASE_COMMAND_URL=jdbc:postgresql://postgres:5432/refdata
       - LIQUIBASE_COMMAND_USERNAME=refdata_user
       - LIQUIBASE_COMMAND_PASSWORD=refdata_password
-    command: --changelog-file=db.changelog-master.xml update
+    command: --changelog-file=db.changelog_master.xml update
 
 volumes:
   postgres_data:

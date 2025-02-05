@@ -4,21 +4,24 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <property name="currency.table" value="currency_rates"/>
+    <property name="version_number" value="v1.0"/>
     
-    <changeSet id="v1.0-load-currency-data" author="business-team">
+    <changeSet id="v1.0-currency-rates-load-data" author="business-team">  
         <loadData
-            file="v1.0_currency_data.csv"
-            tableName="currency_rates"
+            file="v1.0_currency_rates.csv"
+            tableName="${currency.table}"
             relativeToChangelogFile="true">
             <column name="currency_code" type="STRING"/>
             <column name="rate" type="NUMERIC"/>
             <column name="decimals" type="NUMERIC"/>
-            <column name="is_active" type="BOOLEAN"/>
             <column name="description" type="STRING"/>
-            <column name="created_by" type="STRING"/>
+            <column name="created_by_deployment_version" type="STRING" defaultValue="${version_number}"/>
+            <column name="is_active" type="BOOLEAN" defaultValueBoolean="true"/>
         </loadData>
         <rollback>
-            DELETE FROM currency_rates WHERE created_by = 'v1.0-load';
+            DELETE FROM ${currency.table} WHERE created_by_deployment_version = ${version_number};
         </rollback>
     </changeSet>
 
