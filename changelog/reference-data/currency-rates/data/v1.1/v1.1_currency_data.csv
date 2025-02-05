@@ -1,2 +1,6 @@
 currency_code,rate,decimals,is_active,description,created_by
-ARN,110.5000,0,true,"Arun Kumar Market",v1.1-load
+USD,1.0000,2,true,"United States Dollar",v1.0-load
+EUR,1.1000,2,true,"Euro",v1.0-load
+GBP,1.2000,2,true,"British Pound Sterling",v1.0-load
+JPY,110.5000,0,true,"Japanese Yenn",v1.0-load
+MCK,110.5000,0,true,"Mukesh Kumar Market",v1.1-load

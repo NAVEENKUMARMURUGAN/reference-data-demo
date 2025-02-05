@@ -18,11 +18,7 @@
             <column name="created_by" type="STRING"/>
         </loadData>
         <rollback>
-            DELETE FROM currency_rates 
-            WHERE currency_code IN (
-                SELECT currency_code 
-                FROM CSVREAD('${liquibase.changelog.parent.dir}/data/v1.0/v1.0_currency_data.csv')
-            );
+            DELETE FROM currency_rates WHERE created_by = 'v1.0-load';
         </rollback>
     </changeSet>
 
