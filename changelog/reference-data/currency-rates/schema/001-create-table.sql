@@ -1,4 +1,8 @@
 -- schema/001-create-table.sql
+-- Drop if exists
+DROP TABLE IF EXISTS currency_rates;
+
+-- Create table
 CREATE TABLE currency_rates (
     currency_code VARCHAR(3),
     rate DECIMAL(10,4) NOT NULL,

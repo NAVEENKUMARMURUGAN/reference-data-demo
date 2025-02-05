@@ -18,7 +18,7 @@
 
         <!-- Load new data -->
         <loadData
-            file="v1.1_currency_data.csv"
+            file="v1.3_currency_data.csv"
             tableName="temp_currency_rates"
             relativeToChangelogFile="true">
             <column name="currency_code" type="STRING"/>
@@ -96,7 +96,8 @@
         <!-- Cleanup -->
         <dropTable tableName="temp_currency_rates"/>
 
-                <sql>
+        <!-- Store the execution timestamp for rollback -->
+        <sql>
             CREATE TEMPORARY TABLE IF NOT EXISTS tmp_execution_time AS
             SELECT CURRENT_TIMESTAMP as exec_time;
         </sql>
@@ -117,7 +118,6 @@
                 DROP TABLE IF EXISTS tmp_execution_time;
             </sql>
         </rollback>
-</changeSet>
-
+    </changeSet>
     
 </databaseChangeLog>

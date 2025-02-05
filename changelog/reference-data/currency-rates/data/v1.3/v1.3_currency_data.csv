@@ -1,0 +1,5 @@
+currency_code,rate,decimals,is_active,description,created_by
+USD,1.0000,2,true,"United States Dollar",v1.0-load
+EUR,1.1000,2,true,"Euro",v1.0-load
+GBP,1.2000,2,true,"British Pound",v1.3-load
+FRF,1.3000,2,true,"French Franc",v1.3-load

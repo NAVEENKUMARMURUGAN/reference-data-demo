@@ -7,12 +7,8 @@
     
 
     <!-- Create tables - using SQL -->
-    <changeSet id="ref-001-create-table" author="dev-team">
-        <sqlFile path="reference-data/currency-rates/schema/001-create-table.sql" 
-                 relativeToChangelogFile="true"
-                 splitStatements="true"
-                 stripComments="true"/>
-    </changeSet>
+    <include file="reference-data/currency-rates/schema/001-create-table.xml" 
+             relativeToChangelogFile="true"/>
     
     <!-- Initial data load - using XML with CSV -->
     <include file="reference-data/currency-rates/data/v1.0/v1.0-currency-load.xml" 

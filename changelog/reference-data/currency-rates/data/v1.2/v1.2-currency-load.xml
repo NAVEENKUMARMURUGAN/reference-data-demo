@@ -95,7 +95,30 @@
 
         <!-- Cleanup -->
         <dropTable tableName="temp_currency_rates"/>
+
+        <sql>
+            CREATE TEMPORARY TABLE IF NOT EXISTS tmp_execution_time AS
+            SELECT CURRENT_TIMESTAMP as exec_time;
+        </sql>
+
+        <rollback>
+            <!-- Restore the previous state by removing new records and un-ending previously ended records -->
+            <sql>
+                WITH execution_time AS (SELECT exec_time FROM tmp_execution_time)
+                DELETE FROM currency_rates
+                WHERE effective_from = (SELECT exec_time FROM execution_time);
+
+                WITH execution_time AS (SELECT exec_time FROM tmp_execution_time)
+                UPDATE currency_rates
+                SET effective_to = NULL,
+                    is_active = true
+                WHERE effective_to = (SELECT exec_time FROM execution_time);
+
+                DROP TABLE IF EXISTS tmp_execution_time;
+            </sql>
+        </rollback>
 </changeSet>
+
 
     
 </databaseChangeLog>
