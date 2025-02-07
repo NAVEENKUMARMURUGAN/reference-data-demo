@@ -7,21 +7,26 @@
     
     <property name="currency.table" value="currency_rates"/>
     <property name="temp.table" value="temp_currency_rates"/>
-    <property name="version_number" value="v1.1"/>
+    <property name="prev.version.number" value="v1.0" global="false"/>
+    <property name="version.number" value="v1.1" global="false"/>
     
-    <changeSet id="process-currency-updates" author="business-team">
-    <!-- Create temp table -->
+    <changeSet id="process-currency-updates-${version.number}" author="business-team">
+
+        <sql>
+            DROP TABLE IF EXISTS ${temp.table};
+        </sql> 
+
+        <!-- Create temp table -->
         <createTable tableName="${temp.table}">
             <column name="currency_code" type="VARCHAR(3)"/>
             <column name="rate" type="DECIMAL(10,4)"/>
             <column name="decimals" type="INT"/>
             <column name="description" type="VARCHAR(255)"/>
-            <column name="created_by_deployment_version" type="VARCHAR(100)" defaultValue="${version_number}"/>
         </createTable>
 
         <!-- Load new data -->
         <loadData
-            file="${version_number}_${currency.table}.csv"
+            file="${version.number}_${currency.table}.csv"
             tableName="${temp.table}"
             relativeToChangelogFile="true">
             <column name="currency_code" type="STRING"/>
@@ -30,93 +35,39 @@
             <column name="description" type="STRING"/>
         </loadData>
 
-        <!-- Handle Updates - End date existing records that changed -->
+        <!-- Handle Updates - Set effective_to for existing records -->
         <sql>
             UPDATE ${currency.table} cr
-            SET effective_to = CURRENT_TIMESTAMP
-            FROM ${temp.table} tr
-            WHERE cr.currency_code = tr.currency_code
-            AND cr.effective_to IS NULL
-            AND (
-                cr.rate != tr.rate OR
-                cr.decimals != tr.decimals OR
-                cr.description != tr.description
-            );
+            SET effective_to = CURRENT_DATE
+            WHERE deployment_version = '${prev.version.number}'
         </sql>
 
         <!-- Handle Updates - Insert new versions -->
         <sql>
             INSERT INTO ${currency.table}
-            (currency_code, rate, decimals, description, created_by_deployment_version, effective_from)
+            (currency_code, rate, decimals, description, deployment_version, effective_from, effective_to)
             SELECT 
                 tr.currency_code,
                 tr.rate,
                 tr.decimals,
                 tr.description,
-                tr.is_active,
-                tr.created_by_deployment_version,
-                CURRENT_TIMESTAMP
-            FROM ${temp.table} tr
-            JOIN ${currency.table} cr 
-            ON cr.currency_code = tr.currency_code
-            WHERE cr.effective_to = CURRENT_TIMESTAMP;
-        </sql>
-
-        <!-- Handle Inserts - New records not in existing table -->
-        <sql>
-            INSERT INTO ${currency.table}
-            (currency_code, rate, decimals, description, is_active, created_by_deployment_version, effective_from)
-            SELECT 
-                tr.currency_code,
-                tr.rate,
-                tr.decimals,
-                tr.description,
-                tr.is_active,
-                tr.created_by_deployment_version,
-                CURRENT_TIMESTAMP
-            FROM ${temp.table} tr
-            WHERE NOT EXISTS (
-                SELECT 1 FROM ${currency.table} cr 
-                WHERE cr.currency_code = tr.currency_code
-            );
-        </sql>
-
-        <!-- Handle Deletes - End date records not in new file -->
-        <sql>
-            UPDATE ${currency.table} cr
-            SET effective_to = CURRENT_TIMESTAMP,
-                is_active = false
-            WHERE NOT EXISTS (
-                SELECT 1 FROM ${temp.table} tr 
-                WHERE tr.currency_code = cr.currency_code
-            )
-            AND cr.effective_to IS NULL;
-        </sql>
-
-        <!-- Cleanup -->
-        <dropTable tableName="${temp.table}"/>
-
-        <sql>
-            CREATE TEMPORARY TABLE IF NOT EXISTS tmp_execution_time AS
-            SELECT CURRENT_TIMESTAMP as exec_time;
-        </sql>
+                '${version.number}' as deployment_version,
+                CURRENT_DATE as effective_from,
+                '9999-12-31' as effective_to
+            FROM ${temp.table} tr;
+        </sql>   
 
         <rollback>
             <!-- Restore the previous state by removing new records and un-ending previously ended records -->
             <sql>
-                WITH execution_time AS (SELECT exec_time FROM tmp_execution_time)
                 DELETE FROM ${currency.table}
-                WHERE effective_from = (SELECT exec_time FROM execution_time);
-
-                WITH execution_time AS (SELECT exec_time FROM tmp_execution_time)
+                WHERE deployment_version = '${version.number}';
+            </sql>
+            <sql>
                 UPDATE ${currency.table}
-                SET effective_to = NULL,
-                    is_active = true
-                WHERE effective_to = (SELECT exec_time FROM execution_time);
-
-                DROP TABLE IF EXISTS tmp_execution_time;
+                SET effective_to = '9999-12-31'
+                WHERE deployment_version = '${prev.version.number}'
             </sql>
         </rollback>
     </changeSet>
-    
 </databaseChangeLog>

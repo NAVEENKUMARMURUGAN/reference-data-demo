@@ -16,8 +16,8 @@
 
     <include file="reference_data/currency_rates/data/v1.1/v1.1_currency_rates_load.xml" 
              relativeToChangelogFile="true"/>
-<!-- 
-    <include file="reference_data/currency_rates/data/v1.2/v1.2_currency_load.xml" 
-             relativeToChangelogFile="true"/> -->
+
+    <include file="reference_data/currency_rates/data/v1.2/v1.2_currency_rates_load.xml"          
+             relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

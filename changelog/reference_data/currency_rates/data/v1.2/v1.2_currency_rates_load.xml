@@ -4,17 +4,19 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
     http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
-
+    
     <property name="currency.table" value="currency_rates"/>
     <property name="temp.table" value="temp_currency_rates"/>
-    <property name="version.number" value="v1.0" global="false"/>
-
-    <changeSet id="initial-currency-rates-load-${version.number}" author="business-team">  
+    <property name="prev.version.number" value="v1.1" global="false"/>
+    <property name="version.number" value="v1.2" global="false"/>
+    
+    <changeSet id="process-currency-updates-${version.number}" author="business-team">
 
         <sql>
             DROP TABLE IF EXISTS ${temp.table};
-        </sql>
+        </sql> 
 
+        <!-- Create temp table -->
         <createTable tableName="${temp.table}">
             <column name="currency_code" type="VARCHAR(3)"/>
             <column name="rate" type="DECIMAL(10,4)"/>
@@ -33,6 +35,14 @@
             <column name="description" type="STRING"/>
         </loadData>
 
+        <!-- Handle Updates - Set effective_to for existing records -->
+        <sql>
+            UPDATE ${currency.table} cr
+            SET effective_to = CURRENT_DATE
+            WHERE deployment_version = '${prev.version.number}'
+        </sql>
+
+        <!-- Handle Updates - Insert new versions -->
         <sql>
             INSERT INTO ${currency.table}
             (currency_code, rate, decimals, description, deployment_version, effective_from, effective_to)
@@ -44,12 +54,19 @@
                 '${version.number}' as deployment_version,
                 CURRENT_DATE as effective_from,
                 '9999-12-31' as effective_to
-            FROM ${temp.table} tr
-        </sql>      
+            FROM ${temp.table} tr;
+        </sql>   
+
         <rollback>
+            <!-- Restore the previous state by removing new records and un-ending previously ended records -->
             <sql>
-            DELETE FROM ${currency.table}
+                DELETE FROM ${currency.table}
                 WHERE deployment_version = '${version.number}';
+            </sql>
+            <sql>
+                UPDATE ${currency.table}
+                SET effective_to = '9999-12-31'
+                WHERE deployment_version = '${prev.version.number}'
             </sql>
         </rollback>
     </changeSet>
