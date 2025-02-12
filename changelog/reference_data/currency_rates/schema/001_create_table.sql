@@ -12,7 +12,7 @@ CREATE TABLE currency_rates (
     expiry_date DATE NULL DEFAULT '9999-12-31',
     deployment_version VARCHAR(100) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    created_by VARCHAR(100) NOT NULL DEFAULT 'Credit Stratergy team', 
+    created_by VARCHAR(100) NOT NULL DEFAULT 'Currency Rates team', 
     CONSTRAINT valid_date_range CHECK (expiry_date >= effective_date),
     CONSTRAINT unique_currency_version UNIQUE (currency_code, deployment_version),
     PRIMARY KEY (currency_code, deployment_version)
