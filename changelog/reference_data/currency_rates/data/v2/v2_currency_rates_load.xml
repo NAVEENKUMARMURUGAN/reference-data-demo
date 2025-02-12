@@ -7,8 +7,8 @@
     
     <property name="currency.table" value="currency_rates"/>
     <property name="temp.table" value="temp_currency_rates"/>
-    <property name="prev.version.number" value="v1.0" global="false"/>
-    <property name="version.number" value="v1.1" global="false"/>
+    <property name="prev.version.number" value="1" global="false"/>
+    <property name="version.number" value="2" global="false"/>
     
     <changeSet id="process-currency-updates-${version.number}" author="business-team">
 
@@ -26,7 +26,7 @@
 
         <!-- Load new data -->
         <loadData
-            file="${version.number}_${currency.table}.csv"
+            file="v${version.number}_${currency.table}.csv"
             tableName="${temp.table}"
             relativeToChangelogFile="true">
             <column name="currency_code" type="STRING"/>
