@@ -7,8 +7,8 @@
     
     <property name="currency.table" value="currency_rates"/>
     <property name="temp.table" value="temp_currency_rates"/>
-    <property name="prev.version.number" value="2" global="false"/>
-    <property name="version.number" value="3" global="false"/>
+    <property name="prev.version.number" value="3" global="false"/>
+    <property name="version.number" value="4" global="false"/>
 
     <changeSet id="validate-version-numbers-${version.number}" author="business-team">
         <sql splitStatements="false">

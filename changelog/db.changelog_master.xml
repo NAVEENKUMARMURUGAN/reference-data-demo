@@ -11,13 +11,16 @@
              relativeToChangelogFile="true"/>  
 
     <!-- Initial data load - using XML with CSV -->
-    <include file="reference_data/currency_rates/data/v1.0/v1.0_currency_rates_load.xml" 
+    <include file="reference_data/currency_rates/data/v1/v1_currency_rates_load.xml" 
              relativeToChangelogFile="true"/>
 
-    <include file="reference_data/currency_rates/data/v1.1/v1.1_currency_rates_load.xml" 
+    <include file="reference_data/currency_rates/data/v2/v2_currency_rates_load.xml" 
              relativeToChangelogFile="true"/>
 
-    <include file="reference_data/currency_rates/data/v1.2/v1.2_currency_rates_load.xml"          
+    <include file="reference_data/currency_rates/data/v3/v3_currency_rates_load.xml"          
+             relativeToChangelogFile="true"/>
+
+    <include file="reference_data/currency_rates/data/v4/v4_currency_rates_load.xml"          
              relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

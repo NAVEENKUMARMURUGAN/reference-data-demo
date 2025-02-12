@@ -9,6 +9,38 @@
     <property name="temp.table" value="temp_currency_rates"/>
     <property name="prev.version.number" value="1" global="false"/>
     <property name="version.number" value="2" global="false"/>
+
+    <changeSet id="validate-version-numbers-${version.number}" author="business-team">
+        <sql splitStatements="false">
+            <![CDATA[
+            DO $BLOCK$ 
+            DECLARE 
+                prev_version_exists integer;
+                new_version_exists integer;
+            BEGIN
+                SELECT COUNT(*) INTO prev_version_exists 
+                FROM ${currency.table} 
+                WHERE deployment_version = '${prev.version.number}';
+
+                IF prev_version_exists = 0 THEN
+                    RAISE EXCEPTION 'Previous version % does not exist', '${prev.version.number}';
+                END IF;
+
+                SELECT COUNT(*) INTO new_version_exists 
+                FROM ${currency.table} 
+                WHERE deployment_version = '${version.number}';
+
+                IF new_version_exists > 0 THEN
+                    RAISE EXCEPTION 'Version % already exists', '${version.number}';
+                END IF;
+
+                IF ${version.number}::integer <= ${prev.version.number}::integer THEN
+                    RAISE EXCEPTION 'New version must be greater than previous version';
+                END IF;
+            END $BLOCK$;
+            ]]>
+        </sql>
+    </changeSet>
     
     <changeSet id="process-currency-updates-${version.number}" author="business-team">
 
@@ -38,22 +70,23 @@
         <!-- Handle Updates - Set effective_to for existing records -->
         <sql>
             UPDATE ${currency.table} cr
-            SET effective_to = CURRENT_DATE
+            SET expiry_date = CURRENT_DATE
             WHERE deployment_version = '${prev.version.number}'
         </sql>
 
         <!-- Handle Updates - Insert new versions -->
         <sql>
             INSERT INTO ${currency.table}
-            (currency_code, rate, decimals, description, deployment_version, effective_from, effective_to)
+            (currency_code, rate, decimals, description, deployment_version, effective_date, expiry_date, created_at)  
             SELECT 
                 tr.currency_code,
                 tr.rate,
                 tr.decimals,
                 tr.description,
                 '${version.number}' as deployment_version,
-                CURRENT_DATE as effective_from,
-                '9999-12-31' as effective_to
+                CURRENT_DATE as effective_date,
+                '9999-12-31' as expiry_date,
+                CURRENT_TIMESTAMP as created_at
             FROM ${temp.table} tr;
         </sql>   
 
@@ -65,7 +98,7 @@
             </sql>
             <sql>
                 UPDATE ${currency.table}
-                SET effective_to = '9999-12-31'
+                SET expiry_date = '9999-12-31'
                 WHERE deployment_version = '${prev.version.number}'
             </sql>
         </rollback>
